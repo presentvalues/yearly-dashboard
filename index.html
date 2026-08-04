@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>年记看板 ｜ 2025</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d1117;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;padding:12px;max-width:1200px;margin:0 auto}
+h1{text-align:center;font-size:18px;color:#f0f6fc;margin:8px 0 3px;letter-spacing:1px}
+.subtitle{text-align:center;font-size:11px;color:#6e7681;margin-bottom:14px}
+.section{margin-bottom:16px}
+.section-title{font-size:14px;font-weight:600;color:#f0f6fc;margin-bottom:8px;padding-left:8px;border-left:3px solid #58a6ff}
+.section-sub{font-size:11px;color:#6e7681;margin:0 0 8px 11px;font-weight:400;text-align:left}
+.chart-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px}
+.footer{text-align:center;font-size:10px;color:#484f58;margin-top:24px;padding:12px 0;border-top:1px solid #21262d}
+.positive{color:#f85149}
+.negative{color:#3fb950}
+table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;color:#c9d1d9}
+th{background:#21262d;color:#c9d1d9;padding:6px 6px;text-align:center;font-weight:500;border-bottom:1px solid #30363d;white-space:nowrap}
+td{padding:5px 6px;text-align:center;border-bottom:1px solid #21262d;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<h1>年记看板 ｜ 2025</h1>
+<p class="subtitle">数据日期: 2025 ｜ 生成时间: 2026-08-04 17:10:34 ｜ 数据来源: 有知有行</p>
+
+<!-- ── 年度历史盈亏 ── -->
+<div class="section">
+<div class="section-title">📈 年度历史盈亏</div>
+<p class="section-sub">历史总盈亏：+15.52 万元 ｜ 2021年至今</p>
+<div class="chart-box" style="margin-bottom:10px"><div id="yearly-chart" style="width:100%;height:340px"></div></div>
+<div id="yearly-table"></div>
+</div>
+
+<div class="footer">PRESENTVALUES ｜ 辰影的自由之路</div>
+
+<script src="https://registry.npmmirror.com/echarts/5.5.0/files/dist/echarts.min.js" defer></script>
+<script>
+const D = {"title": "年记看板 ｜ 2025", "yearly_data": {"years": [{"year": 2021, "begin": 0.0, "net_in": 869200.0, "pnl": -20900.0, "end": 848300.0, "twr": -2.57, "mwr": -2.3, "dividend": 9.48, "csi300": -1.96, "chinext": 7.78, "hsi": -18.55, "sp500": 13.99}, {"year": 2022, "begin": 848300.0, "net_in": 184000.0, "pnl": -114900.0, "end": 917400.0, "twr": -12.09, "mwr": -14.37, "dividend": -0.37, "csi300": -19.84, "chinext": -29.03, "hsi": -15.46, "sp500": -19.44}, {"year": 2023, "begin": 917400.0, "net_in": 376600.0, "pnl": -78600.0, "end": 1215400.0, "twr": -7.35, "mwr": -5.18, "dividend": 6.34, "csi300": -9.14, "chinext": -18.77, "hsi": -13.82, "sp500": 24.23}, {"year": 2024, "begin": 1215400.0, "net_in": 143700.0, "pnl": 284500.0, "end": 1643600.0, "twr": 21.9, "mwr": 21.26, "dividend": 18.76, "csi300": 18.24, "chinext": 14.83, "hsi": 17.67, "sp500": 23.31}, {"year": 2025, "begin": 1643600.0, "net_in": 163300.0, "pnl": 85100.0, "end": 1892000.0, "twr": 4.88, "mwr": 5.15, "dividend": 3.76, "csi300": 20.98, "chinext": 51.56, "hsi": 27.77, "sp500": 16.39}], "cum_pnl": [{"year": 2021, "value": -2.09}, {"year": 2022, "value": -13.58}, {"year": 2023, "value": -21.44}, {"year": 2024, "value": 7.01}, {"year": 2025, "value": 15.52}]}, "yearly_total_txt": "+15.52 万元", "generate_time": "2026-08-04 17:10:34"};
+
+function renderYearlyChart() {
+  const yd = D.yearly_data;
+  if (!yd || !yd.years || !yd.years.length) return;
+  const years = yd.years.map(y => y.year.toString());
+  const pnlData = yd.years.map(y => y.pnl / 10000);
+  const cumData = yd.cum_pnl.map(c => c.value);
+  const pnlAbs = Math.max(Math.abs(Math.min(...pnlData)), Math.abs(Math.max(...pnlData)), 0.1);
+  const cumAbs = Math.max(Math.abs(Math.min(...cumData)), Math.abs(Math.max(...cumData)), 0.1);
+  let axisMax = Math.ceil(Math.max(pnlAbs, cumAbs) / 10) * 10; axisMax = Math.max(axisMax, 10);
+  const axisStep = axisMax / 5;
+  const chart = echarts.init(document.getElementById('yearly-chart'));
+  chart.setOption({
+    tooltip: { trigger: 'axis',
+      formatter: function(params) {
+        let s = '<b>' + params[0].axisValue + '</b><br/>';
+        params.forEach(p => s += p.marker + ' ' + p.seriesName + ': ' + (p.value>=0?'+':'') + p.value.toFixed(2) + '万<br/>');
+        return s;
+      } },
+    legend: { data: ['当年盈亏','累计盈亏'], top: 0, textStyle: { color: '#c9d1d9' } },
+    grid: { left: '10%', right: '6%', top: '15%', bottom: '10%' },
+    xAxis: { type: 'category', data: years, boundaryGap: true, axisLabel: { color: '#6e7681', fontSize: 10, margin: 8 } },
+    yAxis: { type: 'value', min: -axisMax, max: axisMax, interval: axisStep, name: '万元',
+      nameTextStyle: { color: '#6e7681', fontSize: 10 },
+      axisLabel: { formatter: v => v.toFixed(0), color: '#6e7681', fontSize: 10 },
+      splitLine: { lineStyle: { color: '#21262d' } } },
+    series: [
+      { name: '当年盈亏', type: 'bar', barWidth: '45%',
+        data: pnlData.map(v => ({ value: v, itemStyle: { color: v>=0?'#f85149':'#3fb950' } })) },
+      { name: '累计盈亏', type: 'line', data: cumData,
+        lineStyle: { color: '#58a6ff', width: 3 }, itemStyle: { color: '#58a6ff' }, symbol: 'circle', symbolSize: 8 }
+    ]
+  });
+  setTimeout(() => chart.resize(), 300);
+  window.addEventListener('resize', () => chart.resize());
+  window.addEventListener('orientationchange', () => setTimeout(() => chart.resize(), 500));
+}
+
+function renderYearlyTable() {
+  const yd = D.yearly_data;
+  if (!yd || !yd.years) return;
+  const el = document.getElementById('yearly-table');
+  const cols = [
+    {key:'year', title:'年份', fmt:v=>v, cls:null},
+    {key:'pnl', title:'当年盈亏(万)', fmt:v=>(v>=0?'+':'')+v.toFixed(2), cls:v=>v>=0?'positive':'negative'},
+    {key:'twr', title:'时间加权收益', fmt:v=>v.toFixed(2)+'%', cls:v=>v>=0?'positive':'negative'},
+    {key:'mwr', title:'资金加权收益', fmt:v=>v.toFixed(2)+'%', cls:v=>v>=0?'positive':'negative'},
+    {key:'dividend', title:'中证红利全收益', fmt:v=>v.toFixed(2)+'%', cls:v=>v>=0?'positive':'negative'},
+    {key:'csi300', title:'沪深300全收益', fmt:v=>v.toFixed(2)+'%', cls:v=>v>=0?'positive':'negative'},
+    {key:'chinext', title:'创业板全收益', fmt:v=>v.toFixed(2)+'%', cls:v=>v>=0?'positive':'negative'},
+    {key:'hsi', title:'恒生指数', fmt:v=>v.toFixed(2)+'%', cls:v=>v>=0?'positive':'negative'},
+    {key:'sp500', title:'标普500', fmt:v=>v.toFixed(2)+'%', cls:v=>v>=0?'positive':'negative'}
+  ];
+  let html = '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;overflow-x:auto">';
+  html += '<table><thead><tr>';
+  cols.forEach(c => html += '<th>'+c.title+'</th>');
+  html += '</tr></thead><tbody>';
+  yd.years.forEach(y => {
+    html += '<tr>';
+    cols.forEach(c => {
+      const v = y[c.key];
+      if (v === undefined || v === null) { html += '<td>—</td>'; return; }
+      const cls = c.cls ? c.cls(v) : '';
+      html += '<td class="'+cls+'">'+c.fmt(v)+'</td>';
+    });
+    html += '</tr>';
+  });
+  const n = yd.years.length;
+  const annualize = arr => {
+    let prod = 1; arr.forEach(v => prod *= (1 + v/100));
+    return (Math.pow(prod, 1/n) - 1) * 100;
+  };
+  const pnlAvg = yd.years.reduce((s,y) => s + y.pnl, 0) / 10000 / n;
+  html += '<tr style="background:#21262d;font-weight:600">';
+  html += '<td class="positive">年化</td>';
+  html += '<td class="'+(pnlAvg>=0?'positive':'negative')+'">'+(pnlAvg>=0?'+':'')+pnlAvg.toFixed(2)+'</td>';
+  ['twr','mwr','dividend','csi300','chinext','hsi','sp500'].forEach(k => {
+    const ann = annualize(yd.years.map(y => y[k]));
+    html += '<td class="'+(ann>=0?'positive':'negative')+'">'+ann.toFixed(2)+'%</td>';
+  });
+  html += '</tr></tbody></table></div>';
+  el.innerHTML = html;
+}
+
+(function init() {
+  renderYearlyTable();
+  const t0 = Date.now();
+  (function tryRender() {
+    if (typeof echarts !== 'undefined') { renderYearlyChart(); return; }
+    if (Date.now() - t0 > 3000) {
+      const el = document.getElementById('yearly-chart');
+      if (el) el.innerHTML = '<div style="text-align:center;padding:24px;color:#6e7681">图表加载失败（离线），数据见下方表格</div>';
+      return;
+    }
+    setTimeout(tryRender, 100);
+  })();
+})();
+</script>
+</body>
+</html>
